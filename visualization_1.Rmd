@@ -1,0 +1,73 @@
+---
+title: "Visualization_1"
+author: "Jiayi Shen"
+date: "9/26/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggridges)
+```
+
+
+```{r}
+install.packages("devtools")
+library("devtools")
+install_github("ropensci/rnoaa")
+
+library(rnoaa)
+
+weather_df = 
+  rnoaa::meteo_pull_monitors(c("USW00094728", "USC00519397", "USS0023B17S"),
+                      var = c("PRCP", "TMIN", "TMAX"), 
+                      date_min = "2017-01-01",
+                      date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY", 
+                      USC00519397 = "Waikiki_HA",
+                      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+weather_df
+```
+
+
+Basic Scatter Plot:
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point()
+```
+
+Alternatively, we can use ` %>% ` to avoid storing any intermediate varaibles
+```{r}
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point()
+```
+
+Smoothing methods:
+lm() for linear smooths, glm() for generalised linear smooths, loess() for local smooths
+
+
+Try different styles:
+```{r}
+ggplot(weather_df, aes(x = tmax, y = tmin)) + geom_bin2d()
+ggplot(weather_df, aes(x = tmax, y = tmin)) + geom_density2d()
+```
+
+Histograms
+```{r}
+ggplot(weather_df, aes(x = tmax, fill = name)) + 
+  geom_histogram(position = "dodge", binwidth = 2)
+```
+The position = "dodge" places the bars for each group side-by-side
+
+```{r}
+ggplot(weather_df, aes(x = tmax, fill = name)) + 
+  geom_density(alpha = .4, adjust = .5, color = "blue")
+```
+
