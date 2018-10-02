@@ -6,13 +6,17 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
 library(tidyverse)
 library(ggridges)
 ```
 
-
-```{r}
+`cache = TRUE` 
+```{r data_import, cache = TRUE}
 install.packages("devtools")
 library("devtools")
 install_github("ropensci/rnoaa")
@@ -35,22 +39,44 @@ weather_df
 ```
 
 
-Basic Scatter Plot:
-
+## Basic Scatter Plot:
+1. define the dataset we are using 
+2. define aesthetic mapping
 ```{r}
 ggplot(weather_df, aes(x = tmin, y = tmax)) + 
   geom_point()
 ```
 
-Alternatively, we can use ` %>% ` to avoid storing any intermediate varaibles
+Alternatively, we can use ` %>% ` to avoid storing any intermediate varaibles, or data filtering steps.
 ```{r}
 weather_df %>%
+  filter(name == "CentralPark_NY") %>% 
   ggplot(aes(x = tmin, y = tmax)) + 
-  geom_point()
+  geom_point()+
+  geom_smooth(se = FALSE)
 ```
 
 Smoothing methods:
 lm() for linear smooths, glm() for generalised linear smooths, loess() for local smooths
+`se=FALSE` turns of standard error bars. 
+`alpha` defines the transparency of the plots.
+
+
+###Facetting...
+
+```{r}
+ggplot(weather_df, aes(x = tmax, y = tmin, color = name)) + geom_smooth()
+ggplot(weather_df, aes(x = tmax, y = tmin)) + geom_smooth(aes(color = name))
+```
+
+```{r}
+ggplot(weather_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point(aes(size = prcp), alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  facet_grid(. ~ name)
+```
+ 
+can also remove the color=name command in the first line, but loses the colors. 
 
 
 Try different styles:
@@ -59,15 +85,57 @@ ggplot(weather_df, aes(x = tmax, y = tmin)) + geom_bin2d()
 ggplot(weather_df, aes(x = tmax, y = tmin)) + geom_density2d()
 ```
 
+
+
+## Other interesting plots
+looking at tmax V.S. season/date
+```{r}
+ggplot(weather_df, aes(x = date, y = tmax, color = name)) + geom_line()
+```
+
+Adding in precipitation by adding `size = prcp` to `geom_point`
+```{r}
+ggplot(weather_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point(aes(size = prcp), alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  facet_grid(. ~ name)
+```
+
+
+##univariate plots
+
+comparing two lines of code:
+whether or not include the color="blue" in the aesthetic mapping argument. 
+In the second line: ggplot is looking for a variable called blue
+```{r}
+ggplot(weather_df) + geom_point(aes(x = tmax, y = tmin), color = "blue")
+ggplot(weather_df) + geom_point(aes(x = tmax, y = tmin, color = "blue"))
+```
+
 Histograms
+```{r}
+ggplot(weather_df, aes(x = tmax, fill = name)) + 
+  geom_histogram()
+```
+Without saying any specifications, `geom_histogram` produces an overlapped higtogram which is difficiult to read. So we can do the following:
+
 ```{r}
 ggplot(weather_df, aes(x = tmax, fill = name)) + 
   geom_histogram(position = "dodge", binwidth = 2)
 ```
 The position = "dodge" places the bars for each group side-by-side
 
+##Density plot
+
 ```{r}
 ggplot(weather_df, aes(x = tmax, fill = name)) + 
   geom_density(alpha = .4, adjust = .5, color = "blue")
+
+```
+
+Splitting the three categories into there subplots & filling the ridges of density curve.
+```{r}
+ggplot(weather_df, aes(x = tmax, y = name)) + 
+  geom_density_ridges(scale = .85)
 ```
 

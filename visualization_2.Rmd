@@ -1,0 +1,14 @@
+---
+title: "visualization_1"
+author: "Jiayi Shen"
+date: "10/02/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+devtools::install_github("thomasp85/patchwork")
+library(tidyverse)
+library(ggridges)
+library(patchwork)
+```
