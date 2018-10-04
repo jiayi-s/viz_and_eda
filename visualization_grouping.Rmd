@@ -1,0 +1,85 @@
+---
+title: "visualization_grouping"
+author: "Jiayi Shen"
+date: "10/04/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+devtools::install_github("thomasp85/patchwork")
+library(tidyverse)
+library(ggridges)
+library(patchwork)
+
+
+#setting up the output format of graphs
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+#theme_set(theme_bw() + theme(legend.position = "bottom"))
+```
+
+
+```{r loading weather_df}
+weather_df = 
+  rnoaa::meteo_pull_monitors(c("USW00094728", "USC00519397", "USS0023B17S"),
+                      var = c("PRCP", "TMIN", "TMAX"), 
+                      date_min = "2016-01-01",
+                      date_max = "2016-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY", 
+                      USC00519397 = "Waikiki_HA",
+                      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10,
+    month = lubridate::floor_date(date, unit = "month")) %>%
+  select(name, id, date, month, everything())
+
+```
+
+
+`group_by`
+
+```{r}
+weather_df %>%
+  group_by(name, month) 
+```
+
+Counting things 
+```{r}
+weather_df %>%
+  group_by(month) %>%
+  summarize(n = n())
+```
+
+The fact that summarize() produces a dataframe is important (and consistent with other functions in the  tidyverse). You can incorporate grouping and summarizing within broader analysis pipelines.  
+  
+  
+```{r}
+weather_df %>%
+  group_by(name, month) %>%
+  mutate(temp_ranking = min_rank(tmax))
+
+# We could also keep the three days with the highest max temperature:
+# desc() reverse the ranking (from highest to the lowest)
+weather_df %>%
+  group_by(name, month) %>%
+  filter(min_rank(desc(tmax)) < 4)
+```
+
+```{r}
+
+# to compare an observation to it’s previous value. 
+# lag() outputs a list by shifting the time base back by a given number of observations.
+# lead() shifts the timeframe forward
+
+
+weather_df %>%
+  group_by(name) %>%
+  mutate(temp_change = tmax - lead(tmax))
+```
+

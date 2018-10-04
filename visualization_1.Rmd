@@ -6,6 +6,8 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+
+#setting up the output format of graphs
 knitr::opts_chunk$set(
   fig.width = 6,
   fig.asp = .6,
@@ -137,5 +139,29 @@ Splitting the three categories into there subplots & filling the ridges of densi
 ```{r}
 ggplot(weather_df, aes(x = tmax, y = name)) + 
   geom_density_ridges(scale = .85)
+```
+
+
+## Make a bunch of plots
+
+```{r}
+ggplot(weather_df, aes(y = prcp, x = name)) + 
+  geom_boxplot() 
+```
+
+```{r}
+ggplot(weather_df, aes(y = prcp, x = name)) + 
+  geom_violin() 
+```
+
+```{r}
+ggplot(weather_df, aes(x = prcp, fill = name)) + 
+  geom_density(alpha = .5)
+```
+
+```{r}
+weather_df %>% 
+  filter(prcp > 100) %>% 
+  ggplot(aes(x=prcp, fill = id)) + geom_density(alpha = .5)
 ```
 
